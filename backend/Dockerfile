@@ -1,9 +1,9 @@
 FROM node:20
 
-EXPOSE 3000
+WORKDIR /app
 
-WORKDIR ./app
-COPY ./* ./app/
+COPY . /app/
+
 RUN npm i -g @nestjs/cli && npm install && npm run build
 
-CMD npm run start:prod
+CMD ["npm", "start"]
