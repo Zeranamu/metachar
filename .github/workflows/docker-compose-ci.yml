@@ -28,7 +28,7 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: Zeranamu
+          username: zeranamu
           password: dckr_pat_ZLqQD1CppZuvEUIT8NeyVJY7eNk
 
       # 4. Build all services defined in docker-compose.yml
