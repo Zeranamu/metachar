@@ -1,35 +1,39 @@
-name: Save Docker Image Artifact
+name: Build and Save Docker Compose Images
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
-  build_and_save:
+  build-images:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Build Docker image
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
+
+      - name: Build images via Compose
         run: |
-          docker build -t my-app:${{ github.sha }} .
-          docker save my-app:${{ github.sha }} > my-app.tar
+          docker compose -f ./docker-compose.yml build
 
-      - name: Upload image artifact
+      - name: Save images to tar
+        run: |
+          docker compose -f ./docker-compose.yml config --services | \
+          while read svc; do
+            docker save "${svc}:latest" > "${svc}-${{ github.sha }}.tar"
+          done
+
+      - name: Upload Docker images as artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image-${{ github.sha }}
-          path: my-app.tar
-          retention-days: 1
-
-  use_image:
-    needs: build_and_save
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image-${{ github.sha }}
-          path: ./artifacts
-
-      - name: Load Docker image
-        run: docker load < ./artifacts/my-app.tar
-        
+          name: docker-images
