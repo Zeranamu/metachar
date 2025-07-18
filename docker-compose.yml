@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   metachar-backend:
     build: ./backend
@@ -7,9 +5,7 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    image: zeranamu/metachar-backend
-    #volumes:
-    #  - ./backend/config/local.yml:/app/config/local.yml
+    image: zeranamu/metachar-backend:latest
 
   metachar-frontend:
     build: ./frontend
@@ -17,7 +13,7 @@ services:
     restart: unless-stopped
     ports:
       - "8006:8006"
-    image: zeranamu/metachar-frontend
+    image: zeranamu/metachar-frontend:latest
 
   db:
     image: mysql:8.0
