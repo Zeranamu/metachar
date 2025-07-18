@@ -27,12 +27,20 @@ jobs:
         run: |
           docker compose build
 
+      - name: List Docker images
+        run: docker images
+
       - name: Save images to tar
         run: |
-          docker compose config | grep '^service:' | awk '{print $2}' | \
-            while read svc; do
-              docker save "${svc}:latest" > "${svc}-${{ github.sha }}.tar"
-            done
+          docker compose config --services | \
+          while read svc; do
+            image_name=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${svc}:latest$")
+            if [ -n "$image_name" ]; then
+              docker save -o "${svc}-${{ github.sha }}.tar" "$image_name"
+            else
+              echo "Image for service '${svc}' not found."
+            fi
+          done
 
       - name: Upload Docker image artifacts
         uses: actions/upload-artifact@v4
