@@ -1,0 +1,35 @@
+name: Save Docker Image Artifact
+
+on: [push]
+
+jobs:
+  build_and_save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-app:${{ github.sha }} .
+          docker save my-app:${{ github.sha }} > my-app.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ github.sha }}
+          path: my-app.tar
+          retention-days: 1
+
+  use_image:
+    needs: build_and_save
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ github.sha }}
+          path: ./artifacts
+
+      - name: Load Docker image
+        run: docker load < ./artifacts/my-app.tar
+        
